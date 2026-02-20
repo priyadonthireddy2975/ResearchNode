@@ -60,8 +60,8 @@ const ResearchAssistant = () => {
                 type: 'text'
             }]);
         } catch (err) {
-            console.error("PDF extraction failed", err);
-            alert("Failed to read PDF. Please try another file.");
+            console.error("PDF extraction failed:", err);
+            alert(`Failed to read PDF: ${err.message || 'Unknown error'}. Please ensure the file is a valid PDF.`);
         } finally {
             setIsUploading(false);
         }

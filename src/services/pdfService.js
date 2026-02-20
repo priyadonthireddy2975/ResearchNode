@@ -1,9 +1,10 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-// Since we are in a Vite environment, we might need a different way to load the worker, 
-// but for simplicity in this MVP, we'll use the CDN worker if needed or assume the user will provide text for now.
-// However, I'll implement a robust text extractor.
+// Use the local worker path provided by pdfjs-dist
+// In Vite, we can import the worker URL directly from the package
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export const extractTextFromPDF = async (file) => {
     const arrayBuffer = await file.arrayBuffer();
