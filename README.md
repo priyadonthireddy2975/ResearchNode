@@ -5,16 +5,24 @@ ResearchNode is a high-accuracy technical analysis system designed for multi-vec
 ## 🚀 Core Capabilities
 
 - **Multi-Vector PDF Ingestion**: Automated structural decomposition of complex research documents.
+- **Python-Powered Synthesis**: High-accuracy backend engine (FastAPI) for PhD-level scientific reasoning.
 - **Contextual Synthesis**: Context-aware engine that prioritizes technical methodology and empirical results.
 - **Node Compression**: Extracts Abstract, Methodology, and Key Observations into structured nodes.
-- **Citation Mapping**: Accurate tracking of academic lineage including DOI and journal metadata.
+- **Zero-Hallucination Logic**: Integrated verification pipeline using semantic mapping.
 
 ## 🛠️ Technology Stack
 
 - **Frontend**: React (Vite) + Framer Motion (Interactions)
-- **Engine**: PDF.js Client-Side Extraction
+- **Backend/Engine**: Python (FastAPI) + RAG Pipeline
 - **Persona**: Technical Data Synthesizer
 - **Styling**: "Cyber-Academic" Aesthetic (Teal/Emerald Accent, Dark Mode)
+
+## 🏗️ System Design
+For a deep dive into the architecture, see [SYSTEM_DESIGN.md](./SYSTEM_DESIGN.md).
+
+## 🌍 Academic Community & Challenge
+This project was developed for the **Gen AI for Gen Z** challenge, powered by **Intel Unnati, HPE, and ScaleDown**.
+- **Post/Share**: [LinkedIn Project Showcase](LINK_TO_YOUR_POST_HERE)
 
 ---
 *Built for the future of scientific knowledge synthesis.*
