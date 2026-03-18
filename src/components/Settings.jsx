@@ -23,7 +23,7 @@ const Settings = () => {
                  </div>
                  <div>
                      <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>API Endpoint</label>
-                     <input type="text" value="http://localhost:8000" disabled style={{ width: '100%', padding: '12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-muted)' }} />
+                     <input type="text" value={import.meta.env.VITE_API_URL || "http://localhost:8000"} disabled style={{ width: '100%', padding: '12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-muted)' }} />
                  </div>
             </div>
         </div>

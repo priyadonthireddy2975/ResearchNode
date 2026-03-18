@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { History, FileText } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const Library = () => {
     const [documents, setDocuments] = useState([]);
 
     useEffect(() => {
         // Fetch from backend later
-        fetch('http://localhost:8000/documents')
+        fetch(`${API_BASE}/documents`)
             .then(res => res.json())
             .then(data => setDocuments(data.documents || []))
             .catch(err => console.error("Failed to fetch documents", err));
