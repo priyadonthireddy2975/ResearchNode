@@ -1,40 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Send, FileText, Upload, Sparkles, Quote, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { extractTextFromPDF, summarizePaper } from '../services/pdfService';
+import axios from 'axios';
+
+const API_BASE = 'http://localhost:8000';
 
 const ResearchAssistant = () => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: "Node ready. Upload scientific literature to begin multi-vector extraction.",
+            content: "Node ready. Upload scientific literature to begin analysis.",
             type: 'text'
         }
     ]);
     const [input, setInput] = useState('');
     const [isUploading, setIsUploading] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [paper, setPaper] = useState(null);
-    const fileInputRef = React.useRef(null);
+    const fileInputRef = useRef(null);
 
-
-    const handleSend = () => {
-        if (!input.trim()) return;
-
-        const newMsg = { role: 'user', content: input, type: 'text' };
-        setMessages([...messages, newMsg]);
+    const handleSend = async () => {
+        if (!input.trim() || isAnalyzing) return;
+        
+        const userInput = input;
+        const newMsg = { role: 'user', content: userInput, type: 'text' };
+        setMessages(prev => [...prev, newMsg]);
         setInput('');
+        setIsAnalyzing(true);
 
-        // Simulate response
-        setTimeout(() => {
+        try {
+            const { data } = await axios.post(`${API_BASE}/analyze`, {
+                query: userInput
+            });
+
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: "Based on the Methodology section of the provided paper, the researchers utilized a double-blind specialized neural architecture. This aligns with standard practices but introduces a novel 'Entropy Loss' function.",
+                content: data.synthesis,
                 type: 'text',
-                sources: [
-                    { id: 1, title: 'Neural Dynamics in Scientific Inquiry', authors: 'Chen et al.', year: 2023 }
-                ]
+                sources: data.citations.map((c, i) => ({ id: i, text: c }))
             }]);
-        }, 1000);
+        } catch (err) {
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: `Error: Could not process query. ${err.message}`,
+                type: 'text'
+            }]);
+        } finally {
+            setIsAnalyzing(false);
+        }
     };
 
     const handleFileUpload = async (event) => {
@@ -42,33 +55,42 @@ const ResearchAssistant = () => {
         if (!file) return;
 
         setIsUploading(true);
+        const formData = new FormData();
+        formData.append("file", file);
+
         try {
-            const data = await extractTextFromPDF(file);
-            const summary = summarizePaper(data.text);
+            const { data } = await axios.post(`${API_BASE}/upload`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
             setPaper({
-                name: file.name,
-                pages: data.pageCount,
-                title: summary.title,
-                abstract: summary.abstract,
-                keyFindings: summary.keyFindings,
-                text: data.text
+                name: data.document.filename,
+                size: data.document.size,
+                keyFindings: [
+                    "Document structure parsed successfully",
+                    "Text extracted and indexed for querying",
+                    "Ready for contextual analysis"
+                ]
             });
 
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: `I've analyzed **${file.name}** (${data.pageCount} pages). You can now ask specific questions about the methodology, results, or citations.`,
+                content: `I've analyzed **${data.document.filename}**. You can now ask specific questions about the methodology, results, or contexts within it.`,
                 type: 'text'
             }]);
         } catch (err) {
-            console.error("PDF extraction failed:", err);
-            alert(`Failed to read PDF: ${err.message || 'Unknown error'}. Please ensure the file is a valid PDF.`);
+            console.error("Upload failed:", err);
+            alert(`Failed to upload PDF: ${err.message}`);
         } finally {
             setIsUploading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
         }
     };
 
     const handleUploadClick = () => {
-        fileInputRef.current.click();
+        fileInputRef.current?.click();
     };
 
     return (
@@ -97,7 +119,7 @@ const ResearchAssistant = () => {
                             </div>
                             <h3 style={{ marginBottom: '12px' }}>Upload Research Paper</h3>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
-                                PDF, TXT, or LaTeX files supported. Analyzes methods, results, and citations instantly.
+                                PDF files supported. Analyzes methods, results, and citations instantly via secure backend endpoints.
                             </p>
                             <button
                                 onClick={handleUploadClick}
@@ -112,9 +134,10 @@ const ResearchAssistant = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '8px'
+                                    gap: '8px',
+                                    cursor: isUploading ? 'not-allowed' : 'pointer'
                                 }}>
-                                {isUploading ? 'Analyzing...' : 'Select File'}
+                                {isUploading ? 'Uploading & Analyzing...' : 'Select File'}
                             </button>
                             <input
                                 type="file"
@@ -130,22 +153,22 @@ const ResearchAssistant = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
                             <div>
                                 <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Document Summary</span>
-                                <h1 className="academic-serif" style={{ fontSize: '28px', marginTop: '8px', color: 'var(--text-primary)' }}>
+                                <h1 className="academic-serif" style={{ fontSize: '28px', marginTop: '8px', color: 'var(--text-primary)', wordBreak: 'break-word' }}>
                                     {paper.name}
                                 </h1>
                                 <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '8px' }}>
-                                    Extracted from {paper.pages} pages • Technical Analysis Ready
+                                    File size: {(paper.size / 1024).toFixed(2)} KB • Indexing Complete
                                 </p>
                             </div>
                             <div style={{ padding: '8px 16px', background: 'var(--glass)', borderRadius: '8px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <CheckCircle2 size={16} color="var(--success)" />
-                                <span style={{ fontSize: '12px', fontWeight: 500 }}>Verified Citations</span>
+                                <span style={{ fontSize: '12px', fontWeight: 500 }}>Backend Synced</span>
                             </div>
                         </div>
 
                         <section style={{ marginBottom: '32px' }}>
                             <h4 style={{ color: 'var(--text-secondary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Sparkles size={16} color="var(--accent)" /> Key Findings
+                                <Sparkles size={16} color="var(--accent)" /> System Status
                             </h4>
                             <ul style={{ paddingLeft: '20px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                                 {paper.keyFindings.map((finding, i) => (
@@ -153,15 +176,23 @@ const ResearchAssistant = () => {
                                 ))}
                             </ul>
                         </section>
-
-                        <section>
-                            <h4 style={{ color: 'var(--text-secondary)', marginBottom: '12px' }}>Abstract / Introduction</h4>
-                            <div style={{ background: 'var(--bg-tertiary)', padding: '20px', borderRadius: '12px', borderLeft: '3px solid var(--accent)' }}>
-                                <p style={{ fontStyle: 'italic', fontSize: '14px', color: 'var(--text-secondary)' }}>
-                                    "{paper.abstract}"
-                                </p>
-                            </div>
-                        </section>
+                        
+                        <div style={{ marginTop: '32px' }}>
+                             <button
+                                onClick={handleUploadClick}
+                                disabled={isUploading}
+                                style={{
+                                    background: 'transparent',
+                                    border: '1px solid var(--border)',
+                                    color: 'var(--text-secondary)',
+                                    padding: '8px 16px',
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                    cursor: 'pointer'
+                                }}>
+                                {isUploading ? 'Uploading...' : 'Upload Another Document'}
+                            </button>
+                        </div>
                     </motion.div>
                 )}
             </div>
@@ -196,16 +227,18 @@ const ResearchAssistant = () => {
                                     color: 'white',
                                     fontSize: '14px',
                                     lineHeight: 1.5,
-                                    boxShadow: msg.role === 'user' ? '0 4px 15px rgba(99, 102, 241, 0.3)' : 'none'
+                                    boxShadow: msg.role === 'user' ? '0 4px 15px rgba(99, 102, 241, 0.3)' : 'none',
+                                    textAlign: 'left'
                                 }}>
                                     {msg.content}
 
-                                    {msg.sources && (
+                                    {msg.sources && msg.sources.length > 0 && (
                                         <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '11px', textAlign: 'left' }}>
-                                            <p style={{ fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase' }}>Sources</p>
+                                            <p style={{ fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase' }}>Extracted Context</p>
                                             {msg.sources.map(s => (
-                                                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-primary)' }}>
-                                                    <Quote size={10} /> {s.authors} ({s.year}). {s.title}.
+                                                <div key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', color: 'var(--text-primary)', marginTop: '4px' }}>
+                                                    <Quote size={10} style={{ marginTop: '2px', flexShrink: 0 }} /> 
+                                                    <span style={{ fontStyle: 'italic', color: 'var(--text-secondary)' }}>{s.text}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -213,6 +246,13 @@ const ResearchAssistant = () => {
                                 </div>
                             </motion.div>
                         ))}
+                        {isAnalyzing && (
+                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginBottom: '24px', textAlign: 'left' }}>
+                                 <div style={{ display: 'inline-block', background: 'var(--bg-tertiary)', padding: '12px 16px', borderRadius: '16px', borderTopLeftRadius: '4px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                                     Synthesizing across internal endpoints...
+                                 </div>
+                             </motion.div>
+                        )}
                     </AnimatePresence>
                 </div>
 
@@ -228,7 +268,8 @@ const ResearchAssistant = () => {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
-                            placeholder="Synthesize insights from the literature..."
+                            placeholder="Ask questions about uploaded literature..."
+                            disabled={isAnalyzing}
                             style={{
                                 width: '100%',
                                 background: 'transparent',
@@ -244,14 +285,17 @@ const ResearchAssistant = () => {
                         />
                         <button
                             onClick={handleSend}
+                            disabled={isAnalyzing || !input.trim()}
                             style={{
                                 position: 'absolute',
                                 right: '12px',
                                 bottom: '12px',
-                                background: 'var(--accent)',
+                                background: input.trim() && !isAnalyzing ? 'var(--accent)' : 'var(--bg-secondary)',
                                 color: 'white',
                                 padding: '8px',
-                                borderRadius: '8px'
+                                borderRadius: '8px',
+                                cursor: input.trim() && !isAnalyzing ? 'pointer' : 'not-allowed',
+                                transition: 'background 0.2s'
                             }}>
                             <Send size={18} />
                         </button>

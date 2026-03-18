@@ -1,4 +1,5 @@
 import { Binary, Search, Layers, Settings, HelpCircle, History, Filter } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 
 const Layout = ({ children }) => {
   return (
@@ -35,15 +36,15 @@ const Layout = ({ children }) => {
         <nav className="sidebar-nav" style={{ padding: '16px', flex: 1 }}>
           <div className="nav-section">
             <p style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px', paddingLeft: '8px', fontWeight: 600 }}>Workspace</p>
-            <NavItem icon={<Search size={18} />} label="Analyze" active />
-            <NavItem icon={<Layers size={18} />} label="Correlations" />
-            <NavItem icon={<History size={18} />} label="Library" />
+            <NavItem to="/analyze" icon={<Search size={18} />} label="Analyze" />
+            <NavItem to="/correlations" icon={<Layers size={18} />} label="Correlations" />
+            <NavItem to="/library" icon={<History size={18} />} label="Library" />
           </div>
         </nav>
 
         <div className="sidebar-footer" style={{ padding: '16px', borderTop: '1px solid var(--border)' }}>
-          <NavItem icon={<Settings size={18} />} label="Settings" />
-          <NavItem icon={<HelpCircle size={18} />} label="Need Help?" />
+          <NavItem to="/settings" icon={<Settings size={18} />} label="Settings" />
+          <NavItem to="#" icon={<HelpCircle size={18} />} label="Need Help?" />
         </div>
       </aside>
 
@@ -89,23 +90,27 @@ const Layout = ({ children }) => {
   );
 };
 
-const NavItem = ({ icon, label, active = false }) => (
-  <button style={{
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '10px 12px',
-    borderRadius: '8px',
-    background: active ? 'var(--glass)' : 'transparent',
-    color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-    marginBottom: '4px',
-    fontSize: '14px',
-    fontWeight: active ? 500 : 400
-  }}>
-    <span style={{ color: active ? 'var(--accent)' : 'inherit' }}>{icon}</span>
-    {label}
-  </button>
+const NavItem = ({ to, icon, label }) => (
+  <NavLink to={to} style={{ textDecoration: 'none' }}>
+    {({ isActive }) => (
+      <div style={{
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '10px 12px',
+        borderRadius: '8px',
+        background: isActive ? 'var(--glass)' : 'transparent',
+        color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+        marginBottom: '4px',
+        fontSize: '14px',
+        fontWeight: isActive ? 500 : 400
+      }}>
+        <span style={{ color: isActive ? 'var(--accent)' : 'inherit' }}>{icon}</span>
+        {label}
+      </div>
+    )}
+  </NavLink>
 );
 
 export default Layout;
