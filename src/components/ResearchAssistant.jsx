@@ -95,6 +95,14 @@ const ResearchAssistant = () => {
 
     return (
         <div style={{ display: 'flex', height: '100%', width: '100%' }}>
+            {/* Hidden file input always mounted */}
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept=".pdf"
+                style={{ display: 'none' }}
+            />
             {/* PDF View / Summary Panel */}
             <div style={{
                 flex: 1,
@@ -139,13 +147,6 @@ const ResearchAssistant = () => {
                                 }}>
                                 {isUploading ? 'Uploading & Analyzing...' : 'Select File'}
                             </button>
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleFileUpload}
-                                accept=".pdf"
-                                style={{ display: 'none' }}
-                            />
                         </div>
                     </div>
                 ) : (
