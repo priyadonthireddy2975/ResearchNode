@@ -29,13 +29,19 @@ class SynthesisResponse(BaseModel):
 try:
     from sentence_transformers import SentenceTransformer
     import faiss
-    print("Loading AI Model (all-MiniLM-L6-v2)...")
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    dimension = model.get_sentence_embedding_dimension()
-    index = faiss.IndexFlatL2(dimension)
-    AI_ENABLED = True
+    
+    # If on Vercel, skip heavy model loading or use smaller model if needed
+    if os.environ.get("VERCEL"):
+        print("Vercel Environment Detected. Using lightweight RAG fallback...")
+        AI_ENABLED = False
+    else:
+        print("Loading AI Model (all-MiniLM-L6-v2)...")
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+        dimension = model.get_sentence_embedding_dimension()
+        index = faiss.IndexFlatL2(dimension)
+        AI_ENABLED = True
 except Exception as e:
-    print(f"Warning: AI model failed to load. {e}")
+    print(f"Warning: AI model failed to load or is not supported in this environment. {e}")
     AI_ENABLED = False
 
 

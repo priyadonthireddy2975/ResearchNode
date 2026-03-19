@@ -2,6 +2,6 @@ fastapi
 uvicorn
 pydantic
 python-multipart
-langchain
-openai
 pypdf
+faiss-cpu
+sentence-transformers

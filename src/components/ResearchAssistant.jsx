@@ -3,7 +3,8 @@ import { Send, FileText, Upload, Sparkles, Quote, CheckCircle2 } from 'lucide-re
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_URL || 
+    (window.location.hostname === 'localhost' ? 'http://localhost:8000' : '/api');
 
 const ResearchAssistant = () => {
     const [messages, setMessages] = useState(() => {
