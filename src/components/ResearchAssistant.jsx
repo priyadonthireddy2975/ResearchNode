@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Send, FileText, Upload, Sparkles, Quote, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -6,18 +6,33 @@ import axios from 'axios';
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const ResearchAssistant = () => {
-    const [messages, setMessages] = useState([
-        {
-            role: 'assistant',
-            content: "Node ready. Upload scientific literature to begin analysis.",
-            type: 'text'
-        }
-    ]);
+    const [messages, setMessages] = useState(() => {
+        const saved = localStorage.getItem('researchMessages');
+        return saved ? JSON.parse(saved) : [
+            {
+                role: 'assistant',
+                content: "Node ready. Upload scientific literature to begin analysis.",
+                type: 'text'
+            }
+        ];
+    });
     const [input, setInput] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [paper, setPaper] = useState(null);
+    const [paper, setPaper] = useState(() => {
+        const saved = localStorage.getItem('researchPaper');
+        return saved ? JSON.parse(saved) : null;
+    });
     const fileInputRef = useRef(null);
+
+    // Persist state to localStorage on changes
+    useEffect(() => {
+        localStorage.setItem('researchMessages', JSON.stringify(messages));
+    }, [messages]);
+
+    useEffect(() => {
+        localStorage.setItem('researchPaper', JSON.stringify(paper));
+    }, [paper]);
 
     const handleSend = async () => {
         if (!input.trim() || isAnalyzing) return;
