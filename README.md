@@ -22,7 +22,6 @@ For a deep dive into the architecture, see [SYSTEM_DESIGN.md](./SYSTEM_DESIGN.md
 
 ## 🌍 Academic Community & Challenge
 This project was developed for the **Gen AI for Gen Z** challenge, powered by **Intel Unnati, HPE, and ScaleDown**.
-- **Post/Share**: [LinkedIn Project Showcase](LINK_TO_YOUR_POST_HERE)
 
 ---
 *Built for the future of scientific knowledge synthesis.*
